@@ -81,7 +81,6 @@ static irqreturn_t interrupt_handler(int irq,
   struct pci_dev * pci_dev = pkdev->pci_dev;
   u16 reg;
 
-  PLOG("PK interrupt!!");
   pci_bus_read_config_word(pci_dev->bus,
                            pci_dev->devfn,
                            0x4, // status reg
@@ -162,6 +161,14 @@ static int probe(struct pci_dev *dev,
   PLOG("pci: bus num=%u prim=%u",dev->bus->number, dev->bus->primary);
   PLOG("pci: vendor=%x device=%x",dev->vendor, dev->device);
   PLOG("pci: slot=%u", PCI_SLOT(dev->devfn));
+
+  if(!check_authority(dev)) {
+    PLOG("pci:probe denied!");
+    return -EINVAL;
+  }
+
+  PLOG("pci:probe on device granted");
+  
   if(verify_pci_version(dev)==0) {
     PLOG("pci:probe device supports PCI 2.3");
   }
@@ -251,9 +258,6 @@ static int probe(struct pci_dev *dev,
       break;
     }
   }
-
-
-
 
   return 0;
 }
